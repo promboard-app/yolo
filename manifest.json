@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "id": "promboard.yolo",
-  "version": "1.0.0",
-  "name": "Ultralytics YOLO — 포즈 뼈대 · 물체 잘라내기",
-  "description": "사진 속 사람 자세를 색 뼈대 그림으로 뽑거나(이미지 생성 노드에 참조로 이어 '같은 자세로' 쓸 때), 사람 · 물건을 찾아 하나씩 잘라 여러 장으로 낸다. 모델은 Ultralytics 공식 YOLO26n 포즈 · 분할(각 약 12MB, AGPL-3.0)을 원래 출처(GitHub 릴리스)에서 받는다. 그래픽카드 없이 CPU 로 사진 한 장에 1초 안팎이다. 예제 사진 5장과 '사진 → 포즈 뼈대 → 같은 자세로 새 인물' 워크플로우가 들어 있다.",
+  "version": "1.1.0",
+  "name": "Ultralytics YOLO — 포즈 뼈대 · 물체 잘라내기 · 찾기와 추적",
+  "description": "사진 · 영상 속 사람 자세를 색 뼈대 그림 · 뼈대 영상으로 뽑거나(이미지 · 영상 생성 노드에 참조로 이어 '같은 자세 · 같은 동작'으로 쓸 때), 사람 · 물건을 찾아 하나씩 잘라 내거나 흑백 마스크 영상으로 낸다. 찾은 것에 상자 · 이름(영상은 추적 번호 · 이동 꼬리까지)을 그린 결과도 늘 함께 나온다. 모델은 Ultralytics 공식 YOLO26n 포즈 · 분할(각 약 12MB, AGPL-3.0)을 원래 출처(GitHub 릴리스)에서 받는다. 그래픽카드 없이 CPU 로 사진 한 장에 1초 안팎, 영상은 1080p 한 프레임에 0.1초 안팎이다. 예제 사진 5장과 워크플로우 2개(사진 → 같은 자세로 새 인물, 영상 → 같은 동작으로 새 인물)가 들어 있다.",
   "author": "PromBoard",
   "license": "AGPL-3.0-only",
   "app": ">=1.0.1",
@@ -13,20 +13,24 @@
   "nodes": [
     {
       "id": "yolo",
-      "label": "YOLO 포즈 · 물체",
-      "description": "연결한 사진에서 사람 자세를 뼈대 그림 한 장으로 뽑거나, 찾은 사람 · 물건을 하나씩 잘라 여러 장으로 낸다. 찾은 것이 없으면 '찾은 것 없음'이 보인다.",
-      "layout": "single",
+      "label": "YOLO 포즈 · 물체 · 추적",
+      "description": "사진 · 영상 중 하나 이상을 잇는다(둘 다 이으면 둘 다 처리). 사진 → '사진 결과'(뼈대 한 장 또는 잘라낸 물체 여러 장)와 '찾은 것 표시'(상자 + 종류 이름). 영상 → '영상 결과'(포즈는 색 뼈대 영상, 물체는 흑백 마스크 영상)와 '찾기 · 추적 영상'(상자 · 이름 · 번호 · 이동 꼬리). 영상 결과는 원본과 같은 크기 · fps · 길이의 소리 없는 mp4, 5분까지.",
+      "layout": "grid",
       "inputs": [
-        { "id": "image", "type": "image", "label": "사진", "required": true }
+        { "id": "image", "type": "image", "label": "사진", "required": false },
+        { "id": "video", "type": "video", "label": "영상", "required": false }
       ],
       "outputs": [
-        { "id": "images", "type": "image", "label": "결과 (물체는 확실한 것부터)", "multiple": true }
+        { "id": "images", "type": "image", "label": "사진 결과 (물체는 확실한 것부터)", "multiple": true },
+        { "id": "found", "type": "image", "label": "찾은 것 표시" },
+        { "id": "video", "type": "video", "label": "영상 결과 (뼈대 · 마스크)" },
+        { "id": "found-video", "type": "video", "label": "찾기 · 추적 영상" }
       ],
       "settings": [
         {
           "id": "mode",
           "label": "모드",
-          "help": "포즈 뼈대는 사람 자세를 검은 바탕의 색 뼈대 한 장으로 그린다. 물체 잘라내기는 찾은 사람 · 물건을 하나씩 네모로 잘라 여러 장으로, 물체 오려내기는 같은 것을 배경을 지운 투명 PNG 로 낸다.",
+          "help": "포즈 뼈대: 사람 자세를 검은 바탕 색 뼈대로(영상이면 뼈대 영상). 물체 잘라내기 · 오려내기: 찾은 사람 · 물건을 하나씩 네모 · 투명 PNG 로(영상이면 흑백 마스크 영상). 찾기 · 추적 결과는 모드와 상관없이 늘 나온다.",
           "type": "select",
           "options": [
             { "value": "pose", "label": "포즈 뼈대" },
