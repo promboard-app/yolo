@@ -2,6 +2,42 @@
 
 PromBoard 커뮤니티 플러그인 예시입니다. 캔버스에 **YOLO 포즈 · 물체 · 추적** 노드 하나를 더합니다. 사진 · 영상 입력은 둘 다 선택이고 하나 이상 이으면 됩니다. 둘 다 이으면 둘 다 처리합니다. 모드는 노드의 모드 알약으로 고릅니다.
 
+![왼쪽은 춤추는 사람 사진에서 뽑은 포즈 뼈대, 오른쪽은 책상 사진에서 찾은 것 표시와 하나씩 잘라 낸 사진 8장](docs/ko/hero.jpg)
+
+왼쪽은 포즈 뼈대 모드, 오른쪽은 물체 잘라내기 모드의 결과입니다. 물체 잘라내기는 찾은 것 표시(상자 + 이름)와 함께 찾은 것을 하나씩 잘라 낸 사진을 냅니다.
+
+## 결과 예시
+
+그림은 모두 이 저장소의 `nodes/main.py` 를 그대로 돌려 얻은 결과입니다. 찾는 기준은 따로 적지 않으면 보통이고, 예제 사진은 `cards/` 의 사진입니다.
+
+### 사진 → 포즈 뼈대
+
+![요가 자세 · 두 친구 사진과 각각에서 뽑은 포즈 뼈대](docs/ko/pose.jpg)
+
+### 사진 → 물체 잘라내기 · 물체 오려내기
+
+![공원 사진의 찾은 것 표시, 그리고 같은 물체를 네모로 잘라 낸 결과와 배경을 지운 결과](docs/ko/objects.jpg)
+
+물체 잘라내기는 찾은 것을 네모로 잘라 내고, 물체 오려내기는 같은 것을 배경을 지운 투명 PNG 로 냅니다(그림의 체크무늬가 투명한 부분).
+
+![책상 사진을 찾는 기준 넉넉하게 · 보통 · 엄격하게로 돌린 찾은 것 표시](docs/ko/confidence.jpg)
+
+찾는 기준을 넉넉하게로 두면 키보드 · 작은 책까지 더 찾고, 엄격하게로 두면 점수가 낮은 것(휴대폰을 mouse 로 잘못 찾은 상자 등)이 빠집니다.
+
+### 영상 → 포즈 뼈대 영상
+
+![왼쪽은 원본 영상, 오른쪽은 플러그인이 뽑은 포즈 뼈대 영상](docs/video-pose.gif)
+
+왼쪽은 원본 영상, 오른쪽은 포즈 뼈대 모드의 영상 결과입니다. 원본은 1898년 영화 「Ella Lola, a la Trilby」(퍼블릭 도메인)입니다.
+
+### 영상 → 찾기 · 추적 영상 · 흑백 마스크 영상
+
+![왼쪽은 사람마다 상자 · 추적 번호 · 이동 꼬리를 그린 찾기 · 추적 영상, 오른쪽은 찾은 사람을 흰색으로 칠한 흑백 마스크 영상](docs/video-objects.gif)
+
+물체 잘라내기 모드에 영상을 이은 결과입니다. 왼쪽은 찾기 · 추적 영상(상자 · 이름 · 추적 번호 · 이동 꼬리), 오른쪽은 영상 결과인 흑백 마스크 영상(흰색 = 찾은 사람 · 물건)입니다. 원본은 뤼미에르 형제의 1895년 영화 「La Sortie de l'usine Lumière à Lyon」(퍼블릭 도메인, [위키미디어 공용](https://commons.wikimedia.org/wiki/File:La_Sortie_de_l%27Usine_Lumi%C3%A8re_%C3%A0_Lyon_I_1895.webm))의 4~12초를 1024×768 로 줄인 것입니다.
+
+두 움짤은 파일 크기를 줄이려고 프레임을 덜어 내고, 왼쪽 영상의 필름 잡티를 살짝 흐리게 했습니다. 플러그인이 내는 mp4 는 원본과 크기 · fps · 프레임 수가 같습니다.
+
 ## 언제 어느 포트로 나오나
 
 | 이은 것 | 모드 | 사진 결과 | 찾은 것 표시 | 영상 결과 | 찾기 · 추적 영상 |
@@ -48,7 +84,10 @@ nodes/main.py               NODES = {"yolo": 함수} — 레터박스 전처리,
 nodes/requirements*.txt     받을 패키지 · 운영체제별 해시 잠금 파일
 cards/                      예제 사진(참조 이미지 카드)
 workflows/                  워크플로우 2개와 썸네일(앱의 워크플로우 저장 모양 그대로)
+docs/                       이 README 의 그림 · 움짤(ko · en, 움짤은 두 언어 공용). 플러그인 zip 에는 넣지 않는다
 ```
+
+- 레지스트리에 올리는 zip 은 PromBoard 앱 저장소의 `server/src/tools/packPlugin.ts` 로 만듭니다. `packPlugin.ts` 는 넘겨받은 폴더를 통째로 묶으므로 `git archive HEAD` 로 꺼낸 폴더를 넘깁니다. `.gitattributes` 의 `export-ignore` 로 `docs/` 가 빠집니다.
 
 - YOLO26 ONNX 는 NMS 가 모델 안에 들어 있어(end2end) 출력이 `(1, 300, 6 + 추가)` 입니다: `[x1, y1, x2, y2, 점수, 종류, …]`(640 레터박스 좌표). 포즈는 추가가 관절 17개 × (x, y, 점수), 분할은 마스크 계수 32개 + 마스크 바탕 `(1, 32, 160, 160)`.
 - 종류가 다른 같은 물체를 두 번 찾는 일이 있어 겹침(IoU 0.7 이상)을 한 번 더 거릅니다.
@@ -61,6 +100,36 @@ workflows/                  워크플로우 2개와 썸네일(앱의 워크플�
 ## English
 
 A PromBoard community plugin example. It adds one **YOLO pose · objects · tracking** node (`YOLO 포즈 · 물체 · 추적`) to the canvas. The photo and video inputs are both optional; connect at least one. If both are connected, both are processed. Pick the mode with the node's pill.
+
+![Left: pose skeleton extracted from a dancer photo. Right: detections on a desk photo and the eight crops](docs/en/hero.jpg)
+
+Left is the pose skeleton mode, right is the crop objects mode. Crop objects returns the detections (boxes + names) together with one cropped photo per object.
+
+### Examples
+
+All pictures come from running this repository's `nodes/main.py` as is, on the example photos in `cards/`. The threshold is normal unless stated otherwise.
+
+![Yoga and two-friends photos with the pose skeletons extracted from them](docs/en/pose.jpg)
+
+![Detections on a park photo, the same objects cropped as rectangles and cut out with the background removed](docs/en/objects.jpg)
+
+Crop objects cuts each detection out as a rectangle; cut out objects returns the same detections as transparent PNGs (the checkerboard is the transparent part).
+
+![Detections on the desk photo with the loose, normal and strict thresholds](docs/en/confidence.jpg)
+
+The loose threshold also finds the keyboard and small books; the strict threshold drops low-score detections such as the phone wrongly found as a mouse.
+
+![Left: source video. Right: the pose skeleton video extracted by the plugin](docs/video-pose.gif)
+
+Video in pose skeleton mode: source on the left, video result on the right. The source is the 1898 film "Ella Lola, a la Trilby" (public domain).
+
+![Left: detection and tracking video with boxes, track IDs and motion trails. Right: black-and-white mask video with the people in white](docs/video-objects.gif)
+
+Video in crop objects mode: the detection & tracking video (boxes, names, track IDs, motion trails) on the left and the video result, a black-and-white mask video (white = detected people and objects), on the right. The source is seconds 4–12 of the Lumière brothers' 1895 film "La Sortie de l'usine Lumière à Lyon" (public domain, [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:La_Sortie_de_l%27Usine_Lumi%C3%A8re_%C3%A0_Lyon_I_1895.webm)), scaled to 1024×768.
+
+Both animations drop frames and slightly blur the film grain of the left video to keep the files small. The MP4 files the plugin writes keep the source size, fps and frame count.
+
+### Ports
 
 | Connected | Mode | Photo result (`images`) | Detections (`found`) | Video result (`video`) | Detection & tracking video (`found-video`) |
 |---|---|---|---|---|---|
