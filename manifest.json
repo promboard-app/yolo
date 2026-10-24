@@ -1,0 +1,85 @@
+{
+  "schema": 1,
+  "id": "promboard.yolo",
+  "version": "1.0.0",
+  "name": "Ultralytics YOLO — 포즈 뼈대 · 물체 잘라내기",
+  "description": "사진 속 사람 자세를 색 뼈대 그림으로 뽑거나(이미지 생성 노드에 참조로 이어 '같은 자세로' 쓸 때), 사람 · 물건을 찾아 하나씩 잘라 여러 장으로 낸다. 모델은 Ultralytics 공식 YOLO26n 포즈 · 분할(각 약 12MB, AGPL-3.0)을 원래 출처(GitHub 릴리스)에서 받는다. 그래픽카드 없이 CPU 로 사진 한 장에 1초 안팎이다. 예제 사진 5장과 '사진 → 포즈 뼈대 → 같은 자세로 새 인물' 워크플로우가 들어 있다.",
+  "author": "PromBoard",
+  "license": "AGPL-3.0-only",
+  "app": ">=1.0.1",
+  "repository": "https://github.com/promboard-app/yolo",
+  "icon": "icon.png",
+  "contents": ["nodes", "cards", "workflows"],
+  "nodes": [
+    {
+      "id": "yolo",
+      "label": "YOLO 포즈 · 물체",
+      "description": "연결한 사진에서 사람 자세를 뼈대 그림 한 장으로 뽑거나, 찾은 사람 · 물건을 하나씩 잘라 여러 장으로 낸다. 찾은 것이 없으면 '찾은 것 없음'이 보인다.",
+      "layout": "single",
+      "inputs": [
+        { "id": "image", "type": "image", "label": "사진", "required": true }
+      ],
+      "outputs": [
+        { "id": "images", "type": "image", "label": "결과 (물체는 확실한 것부터)", "multiple": true }
+      ],
+      "settings": [
+        {
+          "id": "mode",
+          "label": "모드",
+          "help": "포즈 뼈대는 사람 자세를 검은 바탕의 색 뼈대 한 장으로 그린다. 물체 잘라내기는 찾은 사람 · 물건을 하나씩 네모로 잘라 여러 장으로, 물체 오려내기는 같은 것을 배경을 지운 투명 PNG 로 낸다.",
+          "type": "select",
+          "options": [
+            { "value": "pose", "label": "포즈 뼈대" },
+            { "value": "crop", "label": "물체 잘라내기" },
+            { "value": "cutout", "label": "물체 오려내기" }
+          ],
+          "default": "pose"
+        },
+        {
+          "id": "confidence",
+          "label": "찾는 기준",
+          "help": "넉넉하게는 흐릿하거나 작은 것까지 더 많이 찾고, 엄격하게는 확실한 것만 찾는다.",
+          "type": "select",
+          "options": [
+            { "value": "loose", "label": "넉넉하게" },
+            { "value": "normal", "label": "보통" },
+            { "value": "strict", "label": "엄격하게" }
+          ],
+          "default": "normal"
+        }
+      ]
+    }
+  ],
+  "python": {
+    "version": "3.12",
+    "torch": "none",
+    "lock": {
+      "win": "nodes/requirements-win.txt",
+      "linux": "nodes/requirements-linux.txt",
+      "mac": "nodes/requirements-mac.txt"
+    },
+    "entry": "nodes.main"
+  },
+  "gpu": { "vramMinMb": 0, "cpuAllowed": true },
+  "permissions": {},
+  "requires": {
+    "models": [
+      {
+        "source": "url",
+        "url": "https://github.com/ultralytics/assets/releases/download/v8.4.0/yolo26n-pose.onnx",
+        "path": "yolo26n/yolo26n-pose.onnx",
+        "bytes": 12125856,
+        "sha256": "93fc5e1d6b7690f33b4e1d60d6e9aec1cea14bdbc361bfae11778969be662078",
+        "license": "AGPL-3.0-only"
+      },
+      {
+        "source": "url",
+        "url": "https://github.com/ultralytics/assets/releases/download/v8.4.0/yolo26n-seg.onnx",
+        "path": "yolo26n/yolo26n-seg.onnx",
+        "bytes": 11218582,
+        "sha256": "711e0ef837c677ae4006f65fe503a62a6b0529979f4828ed50b674a7482b7d2e",
+        "license": "AGPL-3.0-only"
+      }
+    ]
+  }
+}

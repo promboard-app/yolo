@@ -1,0 +1,175 @@
+{
+  "schema": 1,
+  "workflows": [
+    {
+      "id": "pose-to-new-person",
+      "name": "사진 → 포즈 뼈대 → 같은 자세로 새 인물",
+      "description": "소스 이미지에 사진을 올리고 YOLO 노드 ▷, 이어서 이미지 노드 ▷ 를 누른다. YOLO 가 사진 속 자세를 뼈대 그림으로 뽑고, 이미지 노드가 그 뼈대를 참조로 받아 프롬프트 노드 글대로 같은 자세의 새 인물을 그린다. 인물 · 옷 · 배경은 프롬프트 노드 글에서 바꾼다. 참조 그림을 받는 이미지 모델을 고른다.",
+      "thumbnail": "workflows/pose-to-new-person.jpg",
+      "nodes": [
+        {
+          "id": "photo",
+          "position": {
+            "x": 0,
+            "y": 80
+          },
+          "selectedTermIds": [],
+          "isStale": false,
+          "type": "sourceImage",
+          "images": [],
+          "nodeType": "sourceImage",
+          "pendingUploads": [],
+          "inputWires": [],
+          "outputWires": []
+        },
+        {
+          "id": "pose",
+          "position": {
+            "x": 320,
+            "y": 0
+          },
+          "selectedTermIds": [],
+          "isStale": false,
+          "type": "promboard.yolo/yolo",
+          "plugin": {
+            "id": "promboard.yolo",
+            "nodeId": "yolo"
+          },
+          "snapshot": {
+            "plugin": "promboard.yolo",
+            "id": "yolo",
+            "label": "YOLO 포즈 · 물체",
+            "layout": "single",
+            "inputs": [
+              {
+                "id": "image",
+                "type": "image",
+                "label": "사진",
+                "required": true
+              }
+            ],
+            "outputs": [
+              {
+                "id": "images",
+                "type": "image",
+                "label": "결과 (물체는 확실한 것부터)",
+                "multiple": true
+              }
+            ],
+            "settings": [
+              {
+                "id": "mode",
+                "label": "모드",
+                "help": "포즈 뼈대는 사람 자세를 검은 바탕의 색 뼈대 한 장으로 그린다. 물체 잘라내기는 찾은 사람 · 물건을 하나씩 네모로 잘라 여러 장으로, 물체 오려내기는 같은 것을 배경을 지운 투명 PNG 로 낸다.",
+                "type": "select",
+                "options": [
+                  {
+                    "value": "pose",
+                    "label": "포즈 뼈대"
+                  },
+                  {
+                    "value": "crop",
+                    "label": "물체 잘라내기"
+                  },
+                  {
+                    "value": "cutout",
+                    "label": "물체 오려내기"
+                  }
+                ],
+                "default": "pose"
+              },
+              {
+                "id": "confidence",
+                "label": "찾는 기준",
+                "help": "넉넉하게는 흐릿하거나 작은 것까지 더 많이 찾고, 엄격하게는 확실한 것만 찾는다.",
+                "type": "select",
+                "options": [
+                  {
+                    "value": "loose",
+                    "label": "넉넉하게"
+                  },
+                  {
+                    "value": "normal",
+                    "label": "보통"
+                  },
+                  {
+                    "value": "strict",
+                    "label": "엄격하게"
+                  }
+                ],
+                "default": "normal"
+              }
+            ]
+          },
+          "pluginSettings": {
+            "mode": "pose",
+            "confidence": "normal"
+          },
+          "nodeType": "promboard.yolo/yolo",
+          "inputWires": [],
+          "outputWires": [],
+          "outputPick": {}
+        },
+        {
+          "id": "prompt",
+          "position": {
+            "x": 320,
+            "y": 620
+          },
+          "selectedTermIds": [],
+          "isStale": false,
+          "type": "prompt",
+          "promptType": "image",
+          "promptText": "Use the colorful stick-figure skeleton image only as a pose reference. Create a new realistic full-body photo of a different person, a young man in a red hoodie and dark jeans, in exactly the same body pose as the skeleton, on a plain light studio background. Do not draw any skeleton lines or dots.",
+          "promptHistory": [],
+          "nodeType": "prompt",
+          "inputWires": [],
+          "outputWires": [],
+          "targetModel": "gpt-image-2-5-flare"
+        },
+        {
+          "id": "image",
+          "position": {
+            "x": 760,
+            "y": 80
+          },
+          "selectedTermIds": [],
+          "isStale": false,
+          "type": "image",
+          "generations": [],
+          "isGenerating": false,
+          "nodeType": "image",
+          "inputWires": [],
+          "outputWires": [],
+          "targetModel": "gpt-image-2-5-flare"
+        }
+      ],
+      "wires": [
+        {
+          "id": "photo-to-pose",
+          "fromNodeId": "photo",
+          "fromPortId": "source-image-out",
+          "toNodeId": "pose",
+          "toPortId": "in-image",
+          "dataType": "image"
+        },
+        {
+          "id": "prompt-to-image",
+          "fromNodeId": "prompt",
+          "fromPortId": "prompt-text-out",
+          "toNodeId": "image",
+          "toPortId": "image-text-in",
+          "dataType": "text"
+        },
+        {
+          "id": "pose-to-image",
+          "fromNodeId": "pose",
+          "fromPortId": "out-images",
+          "toNodeId": "image",
+          "toPortId": "image-source-in",
+          "dataType": "image"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "cards": [
+    {
+      "kind": "refImage",
+      "id": "example-dancer",
+      "name": "예제 사진 — 춤추는 사람",
+      "file": "cards/dancer.jpg",
+      "role": "포즈 뼈대 예제 (한 사람 · 전신)",
+      "tags": ["YOLO", "포즈", "예제"]
+    },
+    {
+      "kind": "refImage",
+      "id": "example-yoga",
+      "name": "예제 사진 — 요가 자세",
+      "file": "cards/yoga.jpg",
+      "role": "포즈 뼈대 예제 (한 사람 · 전신)",
+      "tags": ["YOLO", "포즈", "예제"]
+    },
+    {
+      "kind": "refImage",
+      "id": "example-friends",
+      "name": "예제 사진 — 두 친구",
+      "file": "cards/friends.jpg",
+      "role": "포즈 뼈대 예제 (두 사람)",
+      "tags": ["YOLO", "포즈", "예제"]
+    },
+    {
+      "kind": "refImage",
+      "id": "example-desk",
+      "name": "예제 사진 — 책상 위 물건",
+      "file": "cards/desk.jpg",
+      "role": "물체 잘라내기 예제 (물건 여러 개)",
+      "tags": ["YOLO", "물체", "예제"]
+    },
+    {
+      "kind": "refImage",
+      "id": "example-park",
+      "name": "예제 사진 — 공원 산책길",
+      "file": "cards/park.jpg",
+      "role": "물체 잘라내기 예제 (사람 · 자전거 · 개)",
+      "tags": ["YOLO", "물체", "예제"]
+    }
+  ]
+}
